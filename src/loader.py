@@ -8,8 +8,6 @@ from datetime import datetime
 from pick import pick
 from time import sleep
 
-
-
 # Create wrapper classes for using slack_sdk in place of slacker
 class SlackDataLoader:
     '''
@@ -34,9 +32,8 @@ class SlackDataLoader:
         '''
         self.path = path
         self.channels = self.get_channels()
-        self.users = self.get_ussers()
-    
-
+        self.users = self.get_users()
+        
     def get_users(self):
         '''
         write a function to get all the users from the json file
@@ -46,20 +43,39 @@ class SlackDataLoader:
 
         return users
     
+    def _get_channel_id(self, channel_name):
+        '''
+        write a function to get channel id from channel name
+        '''
+        return self._channels[channel_name].get('id', None)
+    
     def get_channels(self):
         '''
         write a function to get all the channels from the json file
         '''
         with open(os.path.join(self.path, 'channels.json'), 'r') as f:
             channels = json.load(f)
-
+        
         return channels
 
     def get_channel_messages(self, channel_name):
         '''
         write a function to get all the messages from a channel
-        
         '''
+        messages = []
+        channel = None
+        for cnl in self.channels:
+            if cnl['name'] == channel_name:
+                channel = cnl
+                break
+            
+        if channel is None:
+            return messages
+                
+        for filename in os.listdir(os.path.join(self.path, channel['name'])):
+            with open(os.path.join(self.path, channel['name'], filename), 'r') as f:
+                messages.extend(json.load(f))
+        return messages
 
     # 
     def get_user_map(self):
